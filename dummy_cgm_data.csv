@@ -1,0 +1,12 @@
+Device,SerialNumber,Device Timestamp,Record Type,Historic Glucose mg/dL,Scan Glucose mg/dL,Non-numeric Rapid-Acting Insulin,Rapid-Acting Insulin (units),Non-numeric Food,Carbohydrates (grams),Carbohydrates (servings),Non-numeric Long-Acting Insulin,Long-Acting Insulin (units),Notes,Strip Glucose mg/dL,Ketone mmol/L,Meal Insulin (units),Correction Insulin (units),User Change Insulin (units)
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 10:29,0,111,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 10:44,0,114,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 10:59,0,120,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 11:14,0,135,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 11:29,0,140,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 11:44,0,138,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 11:59,0,110,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 12:14,0,105,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 12:29,0,102,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 12:44,0,98,,,,,,,,,,,,,,
+FreeStyle Libre 2,3M0000XWGV9,11-06-2023 12:59,0,95,,,,,,,,,,,,,,

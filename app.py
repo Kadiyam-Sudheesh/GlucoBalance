@@ -10,12 +10,15 @@ import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response
 
 from api import GlucoBalanceAPI
-from models import db, User, Report, Medication, MedicationLog, EmergencyContact, HypoEvent, FoodLog, HydrationLog, LifestyleLog
+from models import db, User, Report, Medication, MedicationLog, EmergencyContact, HypoEvent, FoodLog, HydrationLog, LifestyleLog, CGMReading
 from services.alerts import check_food_spike_alert
+import pandas as pd
+import numpy as np
 from services.action_plans import generate_action_plan
 from deep_translator import GoogleTranslator
 from xhtml2pdf import pisa
 import io
+import uuid
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -831,29 +834,124 @@ def create_app() -> Flask:
         return {"status": "success", "glasses": log.glasses_count}
 
     @app.route("/lifestyle/add", methods=["POST"])
-    def add_lifestyle():
-        """Log daily sleep and stress."""
+    def log_lifestyle():
+        """Log sleep and stress."""
         if "user_id" not in session:
             return redirect(url_for("login"))
             
-        user_id = session.get("user_id")
         sleep_hours = request.form.get("sleep_hours")
         stress_level = request.form.get("stress_level")
         
-        if sleep_hours and stress_level:
+        try:
+            sleep = float(sleep_hours) if sleep_hours else None
+            stress = int(stress_level) if stress_level else None
+            
             log = LifestyleLog(
-                user_id=user_id,
-                sleep_hours=float(sleep_hours),
-                stress_level=int(stress_level),
-                date=date.today()
+                user_id=session["user_id"],
+                sleep_hours=sleep,
+                stress_level=stress
             )
             db.session.add(log)
             db.session.commit()
-            flash("Lifestyle details logged successfully", "success")
-        else:
-            flash("Please provide both sleep and stress values", "error")
+            flash("Lifestyle logged successfully.", "success")
+        except ValueError:
+            flash("Invalid input for sleep or stress.", "error")
             
         return redirect(url_for("dashboard"))
+
+    @app.route("/import_cgm", methods=["GET", "POST"])
+    def import_cgm():
+        """Handle CGM CSV file upload and parsing."""
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+
+        if request.method == "POST":
+            if 'cgm_file' not in request.files:
+                flash("No file part", "error")
+                return redirect(request.url)
+            file = request.files['cgm_file']
+            if file.filename == '':
+                flash("No selected file", "error")
+                return redirect(request.url)
+                
+            if file and file.filename.endswith('.csv'):
+                try:
+                    # Read CSV using pandas
+                    df = pd.read_csv(file)
+                    
+                    # Heuristics to find the right columns (Dexcom vs Libre differences)
+                    time_col = next((c for c in df.columns if 'time' in c.lower() or 'date' in c.lower()), None)
+                    glucose_col = next((c for c in df.columns if 'glucose' in c.lower() or 'mg/dl' in c.lower()), None)
+                    
+                    if not time_col or not glucose_col:
+                        flash("Could not automatically detect Time or Glucose columns in the CSV. Please check the format.", "error")
+                        return redirect(request.url)
+                        
+                    # Drop rows missing crucial data
+                    df = df.dropna(subset=[time_col, glucose_col])
+                    
+                    # Convert to datetime
+                    df[time_col] = pd.to_datetime(df[time_col], errors='coerce')
+                    df = df.dropna(subset=[time_col]) # drop rows where parsing failed
+                    
+                    # Convert to numeric
+                    df[glucose_col] = pd.to_numeric(df[glucose_col], errors='coerce')
+                    df = df.dropna(subset=[glucose_col])
+
+                    user_id = session["user_id"]
+                    
+                    # Bulk insert for speed
+                    new_readings = []
+                    for _, row in df.iterrows():
+                        # Extract trend if exists (very basic check)
+                        trend = None
+                        trend_cols = [c for c in df.columns if 'trend' in c.lower() or 'direction' in c.lower()]
+                        if trend_cols:
+                            trend = str(row[trend_cols[0]])
+                            if pd.isna(trend) or trend == 'nan':
+                                trend = None
+                                
+                        new_readings.append(
+                            CGMReading(
+                                user_id=user_id,
+                                timestamp=row[time_col],
+                                glucose_value=float(row[glucose_col]),
+                                trend_arrow=trend
+                            )
+                        )
+                    
+                    db.session.bulk_save_objects(new_readings)
+                    db.session.commit()
+                    
+                    flash(f"Successfully imported {len(new_readings)} reading(s)!", "success")
+                    return redirect(url_for("cgm_chart"))
+                    
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Error processing CSV: {str(e)}", "error")
+                    return redirect(request.url)
+            else:
+                 flash("Please upload a .csv file.", "error")
+                 return redirect(request.url)
+
+        # GET request - Show recent readings
+        recent_readings = CGMReading.query.filter_by(user_id=session["user_id"]).order_by(CGMReading.timestamp.desc()).limit(5).all()
+        return render_template("import_cgm.html", recent_readings=recent_readings)
+
+    @app.route("/cgm_chart")
+    def cgm_chart():
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+            
+        readings = CGMReading.query.filter_by(user_id=session["user_id"]).order_by(CGMReading.timestamp.asc()).all()
+        # In a real app we'd paginate or sample this for the UI, but we'll pack it into JSON for ChartJS
+        
+        cgm_data = [
+            {"x": r.timestamp.isoformat(), "y": r.glucose_value}
+            for r in readings
+        ]
+        
+        return render_template("cgm_chart.html", cgm_data=cgm_data)
 
     @app.route("/dashboard")
     def dashboard():
@@ -1023,6 +1121,57 @@ def create_app() -> Flask:
         response.headers['Content-Disposition'] = f'attachment; filename="GlucoBalance_Report_{safe_name}_{date.today()}.pdf"'
         
         return response
+
+    @app.route("/generate_caregiver_link", methods=["POST"])
+    def generate_caregiver_link():
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+            
+        user = User.query.get(session["user_id"])
+        # Generate a new unique token
+        user.caregiver_token = str(uuid.uuid4())
+        db.session.commit()
+        
+        flash("New caregiver link generated successfully.", "success")
+        return redirect(url_for("profile"))
+
+    @app.route("/caregiver/<token>")
+    def caregiver_dashboard(token):
+        """Read-only dashboard view for a caregiver via a secure link."""
+        user = User.query.filter_by(caregiver_token=token).first()
+        
+        if not user:
+            flash("Invalid or expired caregiver link.", "error")
+            return redirect(url_for("index"))
+            
+        reports = Report.query.filter_by(user_id=user.id).order_by(Report.test_date.desc()).all()
+        medications = Medication.query.filter_by(user_id=user.id).all()
+        recent_meals = FoodLog.query.filter_by(user_id=user.id).order_by(FoodLog.timestamp.desc()).limit(10).all()
+        
+        dates = [r.test_date.strftime('%b %d') for r in reversed(reports[-7:])]
+        fbs_data = [r.fbs for r in reversed(reports[-7:])]
+        ppbs_data = [r.ppbs for r in reversed(reports[-7:])]
+        
+        chart_data = {
+            "dates": dates,
+            "fbs": fbs_data,
+            "ppbs": ppbs_data
+        }
+
+        # Calculate basic averages for summary cards
+        avg_fbs = sum(fbs_data) / len(fbs_data) if fbs_data else 0
+        avg_ppbs = sum(ppbs_data) / len(ppbs_data) if ppbs_data else 0
+        latest_hba1c = reports[0].hba1c if reports else 0
+
+        return render_template(
+            "caregiver_dashboard.html", 
+            patient=user, 
+            reports=reports[:5], 
+            medications=medications,
+            recent_meals=recent_meals,
+            chart_data=chart_data,
+            metrics={"avg_fbs": avg_fbs, "avg_ppbs": avg_ppbs, "hba1c": latest_hba1c}
+        )
 
     return app
 

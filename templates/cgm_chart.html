@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}CGM Trend Chart - GlucoBalance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 glass-panel">
+            <div
+                class="card-header bg-transparent border-bottom-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold d-flex align-items-center text-primary">
+                    <i class="bi bi-graph-up-arrow fs-3 me-2 text-primary" aria-hidden="true"></i> Continuous Glucose
+                    Monitor Trends
+                </h4>
+                <a href="{{ url_for('import_cgm') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-cloud-upload" aria-hidden="true"></i> Import More Data
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                {% if cgm_data and cgm_data|length > 0 %}
+                <p class="text-muted">Visualizing {{ cgm_data|length }} imported historical readings.</p>
+                <div style="height: 400px; width: 100%;">
+                    <canvas id="cgmChart"></canvas>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-clipboard2-data text-muted opacity-50 mb-3 block" style="font-size: 4rem;"></i>
+                    <h5 class="text-muted">No CGM Data Available</h5>
+                    <p class="text-muted mb-4">Import a CSV file from your Dexcom or Freestyle Libre device to see your
+                        trends here.</p>
+                    <a href="{{ url_for('import_cgm') }}" class="btn btn-primary rounded-pill px-4">Import Data Now</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if cgm_data and cgm_data|length > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const rawData = {{ cgm_data | tojson
+    }};
+
+    // Basic configuration for a time-series line chart
+    const ctx = document.getElementById('cgmChart').getContext('2d');
+
+    // Define Target Range Colors (70 - 140 mg/dL is standard green zone)
+    const targetMin = 70;
+    const targetMax = 180;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Glucose (mg/dL)',
+                data: rawData,
+                borderColor: 'rgba(37, 99, 235, 1)', // Primary blue
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                pointRadius: 1, // Keep points small for dense CGM data
+                pointHoverRadius: 5,
+                fill: false,
+                tension: 0.4 // Smooth curves
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            plugins: {
+                legend: {
+                    display: false // Hide legend since there's only one dataset
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += Math.round(context.parsed.y) + ' mg/dL';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        tooltipFormat: 'MMM d, yyyy h:mm a',
+                        displayFormats: {
+                            millisecond: 'MMM dd h:mm a',
+                            second: 'MMM dd h:mm a',
+                            minute: 'MMM dd h:mm a',
+                            hour: 'MMM dd h:mm a',
+                            day: 'MMM dd',
+                            week: 'MMM dd',
+                            month: 'MMM yyyy',
+                            quarter: 'MMM yyyy',
+                            year: 'yyyy'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date / Time'
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Glucose (mg/dL)'
+                    },
+                    min: Math.max(0, Math.min(...rawData.map(d => d.y)) - 20), // Dynamic min but not below 0
+                    max: Math.max(...rawData.map(d => d.y)) + 20, // Dynamic max
+                }
+            }
+        }
+    });
+    });
+</script>
+{% endif %}
+{% endblock %}

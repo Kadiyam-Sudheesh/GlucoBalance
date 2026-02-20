@@ -74,6 +74,43 @@
                     </div>
                     {% endif %}
                 </div>
+
+                <!-- Caregiver Sharing Section -->
+                <div style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 1.5rem; margin-top: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <span
+                            style="background: #e0e7ff; padding: 8px; border-radius: 8px; color: #4f46e5; display: flex;">
+                            <i class="bi bi-share-fill"></i>
+                        </span>
+                        <h4 style="margin: 0; color: #0f172a; font-size: 1rem;">Caregiver Access</h4>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">
+                        Generate a secure, read-only link to share your dashboard with your doctor or family.
+                    </p>
+
+                    {% if user.caregiver_token %}
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" class="form-control bg-light" id="caregiverLink"
+                            value="{{ url_for('caregiver_dashboard', token=user.caregiver_token, _external=True) }}"
+                            readonly>
+                        <button class="btn btn-outline-primary" type="button"
+                            onclick="navigator.clipboard.writeText(document.getElementById('caregiverLink').value); alert('Link copied to clipboard!');">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+                    <form action="{{ url_for('generate_caregiver_link') }}" method="POST">
+                        <button type="submit"
+                            class="btn btn-link btn-sm p-0 text-decoration-none w-100 text-center text-muted">Revoke &
+                            Generate New Link</button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('generate_caregiver_link') }}" method="POST">
+                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill shadow-sm">Enable Sharing
+                            Link</button>
+                    </form>
+                    {% endif %}
+                </div>
+
             </div>
 
             <!-- Profile Edit Form -->

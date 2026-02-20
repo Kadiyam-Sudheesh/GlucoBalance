@@ -46,6 +46,7 @@ class User(db.Model):
     best_streak_days = db.Column(db.Integer, default=0)
     last_log_date = db.Column(db.Date, nullable=True)
     theme_preference = db.Column(db.String(20), default="light") # light, dark, high-contrast
+    caregiver_token = db.Column(db.String(100), unique=True, nullable=True) # For sharing dashboard
 
     # Relationships
     reports = db.relationship('Report', backref='user', lazy=True)
@@ -231,6 +232,22 @@ class LifestyleLog(db.Model):
             "sleep_hours": self.sleep_hours,
             "stress_level": self.stress_level,
             "date": self.date.isoformat()
+        }
+
+class CGMReading(db.Model):
+    """Imported Continuous Glucose Monitor readings."""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    glucose_value = db.Column(db.Float, nullable=False)
+    trend_arrow = db.Column(db.String(20), nullable=True) # Optional Dexcom/Libre trend arrow
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "timestamp": self.timestamp.isoformat(),
+            "glucose_value": self.glucose_value,
+            "trend_arrow": self.trend_arrow
         }
 
 # --- Dataclasses for Analysis/API Logic (Keep as is) ---

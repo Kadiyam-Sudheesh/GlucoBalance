@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>{{ patient.name|default('Patient') }}'s Dashboard - GlucoBalance Caregiver View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}" />
+</head>
+
+<body class="bg-light">
+    <!-- Minimal Header for Caregivers -->
+    <header class="gb-header shadow-sm">
+        <div class="gb-container gb-header-inner align-items-center">
+            <div class="gb-logo">
+                <i class="bi bi-heart-pulse-fill text-primary fs-3 me-2" aria-hidden="true"></i>
+                <span class="gb-logo-text">
+                    <span class="gb-logo-title fs-4">GlucoBalance</span>
+                    <span class="gb-logo-subtitle">Secure Caregiver Portal</span>
+                </span>
+            </div>
+            <div>
+                <span class="badge bg-primary rounded-pill px-3 py-2 fw-normal">Read-Only View</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-5 mt-4">
+        <!-- Patient Info Header -->
+        <div class="row align-items-center mb-5 animate-slide-up">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-1">Clinical Dashboard for {{ patient.name|default('Patient') }}</h2>
+                <p class="text-muted mb-0">
+                    Age: {{ patient.age|default('N/A') }} |
+                    Type: {{ patient.diabetes_type|replace('_', ' ')|title|default('N/A') }} |
+                    Last updated: {{ patient.last_log_date.strftime('%b %d, %Y') if patient.last_log_date else 'Never'
+                    }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Key Metrics Cards (Read-only version) -->
+        <div class="row g-4 mb-5 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-square bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+                                <i class="bi bi-droplet-half fs-4" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title text-muted mb-0 fw-bold fs-6 text-uppercase tracking-wide">Avg Fasting
+                                (7d)</h5>
+                        </div>
+                        <h2
+                            class="display-5 fw-bold mb-0 {% if metrics.avg_fbs > 130 %}text-danger{% elif metrics.avg_fbs > 100 %}text-warning{% else %}text-success{% endif %}">
+                            {{ metrics.avg_fbs|round|int if metrics.avg_fbs else '--' }}
+                        </h2>
+                        <small class="text-muted fw-medium">mg/dL</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-square bg-warning bg-opacity-10 text-warning rounded-3 p-3 me-3">
+                                <i class="bi bi-cup-hot-fill fs-4" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title text-muted mb-0 fw-bold fs-6 text-uppercase tracking-wide">Avg
+                                Post-Meal (7d)</h5>
+                        </div>
+                        <h2
+                            class="display-5 fw-bold mb-0 {% if metrics.avg_ppbs > 180 %}text-danger{% elif metrics.avg_ppbs > 140 %}text-warning{% else %}text-success{% endif %}">
+                            {{ metrics.avg_ppbs|round|int if metrics.avg_ppbs else '--' }}
+                        </h2>
+                        <small class="text-muted fw-medium">mg/dL</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-square bg-danger bg-opacity-10 text-danger rounded-3 p-3 me-3">
+                                <i class="bi bi-activity fs-4" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title text-muted mb-0 fw-bold fs-6 text-uppercase tracking-wide">Latest
+                                HbA1c</h5>
+                        </div>
+                        <h2
+                            class="display-5 fw-bold mb-0 {% if metrics.hba1c > 7.0 %}text-danger{% elif metrics.hba1c > 5.7 %}text-warning{% else %}text-success{% endif %}">
+                            {{ "%.1f"|format(metrics.hba1c) if metrics.hba1c else '--' }}%
+                        </h2>
+                        <small class="text-muted fw-medium">percent</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Glucose Trend Chart -->
+            <div class="col-lg-8 animate-fade-in" style="animation-delay: 0.2s;">
+                <div class="card shadow-sm border-0 glass-panel h-100">
+                    <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                        <h5 class="mb-0 fw-bold">7-Day Glucose Trends</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if chart_data.dates %}
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="glucoseChart"></canvas>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-graph-up fs-1 mb-2"></i>
+                            <p>No recent report data available.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Medications -->
+            <div class="col-lg-4 animate-fade-in" style="animation-delay: 0.3s;">
+                <div class="card shadow-sm border-0 glass-panel h-100">
+                    <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                        <h5 class="mb-0 fw-bold">Current Medications</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% if medications %}
+                        <div class="list-group list-group-flush">
+                            {% for med in medications %}
+                            <div class="list-group-item px-0 py-3 bg-transparent">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ med.name }}</h6>
+                                        <small class="text-muted">{{ med.dosage }} • {{ med.frequency }}</small>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">{{ med.type }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center py-4">No active medications listed.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Logs Table -->
+        <div class="row animate-fade-in" style="animation-delay: 0.4s;">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 glass-panel">
+                    <div class="card-header bg-transparent border-bottom-0 pt-4 px-4 pb-0">
+                        <h5 class="mb-0 fw-bold">Recent Nutritional Logs</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date/Time</th>
+                                        <th>Meal/Item</th>
+                                        <th>Category</th>
+                                        <th>Glycemic Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for meal in recent_meals %}
+                                    <tr>
+                                        <td>{{ meal.timestamp.strftime('%b %d, %I:%M %p') }}</td>
+                                        <td class="fw-medium">{{ meal.name }}</td>
+                                        <td>{{ meal.category }}</td>
+                                        <td>
+                                            {% if meal.glycemic_impact == 'LOW_GREEN' %}
+                                            <span class="badge bg-success rounded-pill px-3 py-2"><i
+                                                    class="bi bi-check-circle-fill me-1"></i> Low (Safe)</span>
+                                            {% elif meal.glycemic_impact == 'MEDIUM_YELLOW' %}
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2"><i
+                                                    class="bi bi-exclamation-triangle-fill me-1"></i> Medium</span>
+                                            {% else %}
+                                            <span class="badge bg-danger rounded-pill px-3 py-2"><i
+                                                    class="bi bi-exclamation-octagon-fill me-1"></i> High (Spike)</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No recent meals logged.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    {% if chart_data.dates %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('glucoseChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_data.dates | safe }},
+            datasets: [
+            {
+                label: 'Fasting (FBS)',
+                data: {{ chart_data.fbs | safe }},
+            borderColor: 'rgba(37, 99, 235, 1)',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+                        },
+            {
+                label: 'Post-Meal (PPBS)',
+                data: {{ chart_data.ppbs | safe }},
+            borderColor: 'rgba(234, 179, 8, 1)',
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            tension: 0.4,
+            fill: true
+                        }
+        ]
+                },
+            options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 50,
+                    suggestedMax: 200,
+                    title: { display: true, text: 'mg/dL' }
+                }
+            }
+        }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+
+</html>
