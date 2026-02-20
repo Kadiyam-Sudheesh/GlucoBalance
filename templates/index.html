@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="gb-hero">
+  <div class="gb-container gb-hero-inner">
+    <div class="gb-hero-copy fade-up">
+      <div
+        style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(34, 197, 94, 0.1); color: #166534; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; border: 1px solid rgba(34, 197, 94, 0.2);">
+        <span>🛡️</span> Clinically Based & Secure
+      </div>
+      <h1>
+        GlucoBalance <br>
+        <span class="text-gradient">Health Insights</span>
+      </h1>
+      <p>
+        Convert your blood glucose readings into comprehensive clinical insights
+        and evidence-based recommendations for optimal diabetes management and
+        long-term health outcomes.
+      </p>
+      <ul class="gb-hero-highlights">
+        <li>Clinical analysis of your latest laboratory results</li>
+        <li>Evidence-based weekly and monthly management protocols</li>
+        <li>Medical recommendations and therapeutic lifestyle modifications</li>
+      </ul>
+      <div class="gb-hero-cta">
+        <a href="{{ url_for('login') }}" class="gb-btn gb-btn-primary gb-btn-lg shadow-glow">
+          Begin clinical analysis
+        </a>
+      </div>
+    </div>
+    <div class="gb-hero-panel fade-up delay-100">
+      <div class="image-glow"
+        style="position: relative; width: 100%; height: 500px; border-radius: 1.5rem; overflow: hidden;">
+        <!-- Slideshow Container -->
+        <div id="hero-slideshow" style="width: 100%; height: 100%;">
+          <img src="{{ url_for('static', filename='images/hero_image.png', v=3) }}" class="slide active" alt="Slide 1">
+          <img src="{{ url_for('static', filename='images/slide1.png', v=3) }}" class="slide" alt="Slide 2">
+          <img src="{{ url_for('static', filename='images/slide2.png', v=3) }}" class="slide" alt="Slide 3">
+          <img src="{{ url_for('static', filename='images/slide3.png', v=3) }}" class="slide" alt="Slide 4">
+          <img src="{{ url_for('static', filename='images/slide4.png', v=3) }}" class="slide" alt="Slide 5">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Slideshow Styles */
+  .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    border-radius: 1.5rem;
+  }
+
+  .slide.active {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    let index = 0;
+    const slides = document.querySelectorAll('#hero-slideshow .slide');
+
+    if (slides.length > 0) {
+      setInterval(() => {
+        slides[index].classList.remove('active');
+        index = (index + 1) % slides.length;
+        slides[index].classList.add('active');
+      }, 4000); // Change every 4 seconds
+    }
+  });
+</script>
+
+<section class="gb-section">
+  <div class="gb-container">
+    <div class="gb-card glass-card fade-up delay-200"
+      style="text-align: center; padding: 4rem; background: linear-gradient(135deg, rgba(224, 242, 254, 0.8) 0%, rgba(240, 253, 244, 0.8) 100%);">
+      <h2 style="color: #0f172a; margin-bottom: 1rem; font-size: 2rem;">Ready to analyze your glucose levels?</h2>
+      <p
+        style="color: #4b5563; margin-bottom: 2.5rem; font-size: 1.15rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Login or create an account to access the clinical assessment tool and get personalized recommendations.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('login') }}" class="gb-btn gb-btn-primary gb-btn-lg" style="text-decoration: none;">
+          Login
+        </a>
+        <a href="{{ url_for('signup') }}" class="gb-btn gb-btn-outline gb-btn-lg"
+          style="text-decoration: none; background: white;">
+          Create Account
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how-it-works" class="gb-section gb-section-muted">
+  <div class="gb-container">
+    <div class="gb-section-header fade-up">
+      <h2 class="text-gradient" style="display: inline-block;">How GlucoBalance supports you</h2>
+      <p style="font-size: 1.1rem; max-width: 700px; margin-top: 0.5rem;">
+        Instead of focusing only on "high" or "low" numbers, GlucoBalance
+        looks at your trends and turns them into practical, habit-based
+        guidance.
+      </p>
+    </div>
+
+    <div class="gb-grid-3">
+      <!-- Step 1 -->
+      <div class="gb-card gb-card-info glass-card fade-up delay-100">
+        <div class="icon-box">📊</div>
+        <h3>Understand</h3>
+        <p>
+          Comprehensive clinical interpretation of your glucose levels including
+          fasting blood sugar, post-meal readings, and HbA1c trends.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="gb-card gb-card-info glass-card fade-up delay-200">
+        <div class="icon-box">🗓️</div>
+        <h3>Plan</h3>
+        <p>
+          Evidence-based weekly and monthly management protocols targeting
+          nutrition, physical activity, sleep quality, and stress management.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="gb-card gb-card-info glass-card fade-up delay-300">
+        <div class="icon-box">🚀</div>
+        <h3>Grow</h3>
+        <p>
+          Track your progress with clinical metrics. Monitor improvements in
+          glucose control and metabolic markers over time.
+        </p>
+      </div>
+    </div>
+
+    <div style="margin-top: 5rem; display: flex; align-items: center; gap: 4rem; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 300px;" class="fade-up delay-200">
+        <div class="image-glow">
+          <img src="{{ url_for('static', filename='images/feature_image.png') }}" alt="Healthy food and lifestyle"
+            style="width: 100%; height: auto; border-radius: 1.5rem;" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <div style="flex: 1; min-width: 300px;" class="fade-up delay-300">
+        <h2 style="font-size: 2.2rem; color: #0f172a; margin-bottom: 1.25rem; line-height: 1.2;">
+          Simple changes, <br>
+          <span class="text-gradient">big results.</span>
+        </h2>
+        <p style="font-size: 1.15rem; color: #4b5563; line-height: 1.7; margin-bottom: 1.5rem;">
+          We believe in adding good things rather than just taking away.
+          Small adjustments to your meals and movement can lead to
+          confident, lasting control over your health.
+        </p>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

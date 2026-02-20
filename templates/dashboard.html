@@ -1,0 +1,688 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="gb-main">
+  <div class="gb-container">
+    <h1 style="margin-top: 2rem; color: #0f172a;">Your Health Dashboard</h1>
+
+    <!-- Emergency Button -->
+    <div
+      style="background-color: #fee2e2; border-left: 5px solid #ef4444; padding: 1.5rem; margin-bottom: 2rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center;">
+        <div style="margin-right: 1rem; color: #ef4444;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 2.5rem; height: 2.5rem;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <p style="font-weight: bold; color: #b91c1c; margin: 0; font-size: 1.1rem;">Feeling Low / Hypoglycemia?</p>
+          <p style="color: #dc2626; margin: 0; font-size: 0.9rem;">Get immediate help and guidance.</p>
+        </div>
+      </div>
+      <a href="{{ url_for('emergency') }}"
+        style="background-color: #dc2626; color: white; font-weight: bold; padding: 0.75rem 1.5rem; border-radius: 0.5rem; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        I FEEL LOW
+      </a>
+    </div>
+
+    <!-- HbA1c Estimator Card -->
+    {% if hba1c_estimate %}
+    <div
+      style="background-color: #eff6ff; border-left: 5px solid #3b82f6; padding: 1.5rem; margin-bottom: 2rem; border-radius: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="color: #1e3a8a; font-weight: bold; margin: 0;">Estimated HbA1c</h3>
+          <p style="color: #60a5fa; margin: 0.25rem 0 0; font-size: 0.9rem;">Based on your last 90 days of readings</p>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 2.5rem; font-weight: bold; color: #2563eb;">{{ hba1c_estimate }}%</span>
+          <div style="font-size: 0.8rem; color: #6b7280;">(Medical Standard Est.)</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Gamification & Quick Tracking Row -->
+    <div
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+      <!-- Hydration Tracker -->
+      <div class="gb-card"
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <h3
+          style="color: #0ea5e9; font-weight: bold; margin: 0 0 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+            style="width: 1.5rem; height: 1.5rem;">
+            <path fill-rule="evenodd"
+              d="M11.622 1.602a.75.75 0 0 1 .756 0l.163.1A31.84 31.84 0 0 1 20.25 10.5c0 5.414-4.29 9.75-9.75 9.75S.75 15.914.75 10.5a31.84 31.84 0 0 1 7.709-8.798l.163-.1a.75.75 0 0 1 .756 0ZM8.6 11.232a4.992 4.992 0 0 0-2.828 2.828.75.75 0 1 1-1.414-.5 6.492 6.492 0 0 1 3.676-3.676.75.75 0 1 1 .566 1.348Z"
+              clip-rule="evenodd" />
+          </svg>
+          Hydration Status
+        </h3>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">Target: 8+ glasses per day</p>
+        <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+          <span id="waterCount" style="font-size: 3rem; font-weight: 800; color: #0284c7;">{{ water_glasses }}</span>
+          <span style="color: #64748b; font-weight: 600;">glasses</span>
+        </div>
+        <button onclick="addWaterProcess()" id="addWaterBtn"
+          style="margin-top: 1rem; background-color: #0ea5e9; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 999px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+          <span>+</span> Drink 1 Glass
+        </button>
+      </div>
+
+      <!-- Streak & Motivation -->
+      <div class="gb-card" style="display: flex; flex-direction: column; justify-content: center;">
+        <h3
+          style="color: #f59e0b; font-weight: bold; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+            style="width: 1.5rem; height: 1.5rem;">
+            <path fill-rule="evenodd"
+              d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.546 3.75 3.75 0 0 1 3.255 3.718Z"
+              clip-rule="evenodd" />
+          </svg>
+          Current Streak
+        </h3>
+        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <span style="font-size: 2.5rem; font-weight: 800; color: #d97706;">{{ user.current_streak_days }}</span>
+          <span style="color: #64748b; font-weight: 600;">days</span>
+        </div>
+        <p style="color: #4b5563; font-size: 0.95rem; margin: 0;">
+          {% if user.current_streak_days == 0 %}
+          Log a reading or meal today to start your streak!
+          {% elif user.current_streak_days < 3 %} Great start! Keep tracking daily to build momentum. {% else %} You're
+            on fire! <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+            style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;">
+            <path fill-rule="evenodd"
+              d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.546 3.75 3.75 0 0 1 3.255 3.718Z"
+              clip-rule="evenodd" /></svg> Keep up the incredible consistency! {% endif %} </p>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 1rem;">Personal Best: {{ user.best_streak_days }}
+          days</p>
+      </div>
+    </div>
+
+    <p style="color: #4b5563; margin-bottom: 2rem;">Track your glucose levels over time and see your progress</p>
+
+    <!-- Report History Table -->
+    <div class="gb-card" style="margin-bottom: 2rem;">
+      <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          style="width: 1.5rem; height: 1.5rem;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z" />
+        </svg>
+        Report History
+      </h2>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Test Date</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600;">FBS (mg/dL)</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600;">PPBS (mg/dL)</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600;">HbA1c (%)</th>
+              <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Status</th>
+              <th style="padding: 0.75rem; text-align: right; font-weight: 600;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in reports %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="padding: 0.75rem;">{{ report.test_date }}</td>
+              <td style="padding: 0.75rem;">
+                <strong>{{ report.fbs }}</strong>
+                {% if report.fbs < 100 %}<span style="color: #22c55e; font-size: 0.85rem;">✓ Good</span>{% elif
+                  report.fbs < 126 %}<span style="color: #f59e0b; font-size: 0.85rem;">⚠ Caution</span>{% else %}<span
+                      style="color: #ef4444; font-size: 0.85rem;">✗ High</span>{% endif %}
+              </td>
+              <td style="padding: 0.75rem;">
+                <strong>{{ report.ppbs }}</strong>
+                {% if report.ppbs < 140 %}<span style="color: #22c55e; font-size: 0.85rem;">✓ Good</span>{% elif
+                  report.ppbs < 200 %}<span style="color: #f59e0b; font-size: 0.85rem;">⚠ Caution</span>{% else %}<span
+                      style="color: #ef4444; font-size: 0.85rem;">✗ High</span>{% endif %}
+              </td>
+              <td style="padding: 0.75rem;">
+                <strong>{{ report.hba1c }}</strong>
+                {% if report.hba1c < 5.7 %}<span style="color: #22c55e; font-size: 0.85rem;">✓ Good</span>{% elif
+                  report.hba1c < 6.5 %}<span style="color: #f59e0b; font-size: 0.85rem;">⚠ Caution</span>{% else %}<span
+                      style="color: #ef4444; font-size: 0.85rem;">✗ High</span>{% endif %}
+              </td>
+              <td style="padding: 0.75rem;">
+                {% if report == reports[-1] %}<span
+                  style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.5rem; font-size: 0.85rem;">Latest</span>{%
+                endif %}
+              </td>
+              <td style="padding: 0.75rem; text-align: right;">
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                  <!-- Edit Button -->
+                  <a href="{{ url_for('edit_report', report_id=report.id) }}" title="Edit Report"
+                    style="text-decoration: none; color: #3b82f6; padding: 0.25rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                      style="width: 1.25rem; height: 1.25rem;">
+                      <path
+                        d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.158 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.713ZM19.56 7.102l-3.712-3.712-12.15 12.15a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32L19.56 7.102Z" />
+                    </svg>
+                  </a>
+                  <!-- Delete Button -->
+                  <form action="{{ url_for('delete_report', report_id=report.id) }}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to delete this report? This action cannot be undone.');"
+                    style="display: inline;">
+                    <button type="submit" title="Delete Report"
+                      style="background: none; border: none; cursor: pointer; color: #ef4444; padding: 0.25rem;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                        style="width: 1.25rem; height: 1.25rem;">
+                        <path fill-rule="evenodd"
+                          d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
+                          clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Graphs Section -->
+    <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; margin-bottom: 2rem;">
+
+      <!-- FBS Trend Graph -->
+      <div class="gb-card">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 1.5rem; height: 1.5rem; color: #3b82f6;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+          </svg>
+          Fasting Blood Sugar (FBS) Trend
+        </h2>
+        <p style="color: #4b5563; margin-bottom: 1rem;">Your fasting blood sugar levels over time. Target: Below 100
+          mg/dL</p>
+        <canvas id="fbsChart"></canvas>
+      </div>
+
+      <!-- PPBS Trend Graph -->
+      <div class="gb-card">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 1.5rem; height: 1.5rem; color: #f59e0b;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+          </svg>
+          Post-Meal Blood Sugar (PPBS) Trend
+        </h2>
+        <p style="color: #4b5563; margin-bottom: 1rem;">Your post-meal blood sugar levels over time. Target: Below 140
+          mg/dL</p>
+        <canvas id="ppbsChart"></canvas>
+      </div>
+
+      <!-- HbA1c Trend Graph -->
+      <div class="gb-card">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 1.5rem; height: 1.5rem; color: #ef4444;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+          </svg>
+          HbA1c Trend
+        </h2>
+        <p style="color: #4b5563; margin-bottom: 1rem;">Your average blood sugar level over 3 months. Target: Below 5.7%
+        </p>
+        <canvas id="hba1cChart"></canvas>
+      </div>
+
+      <!-- Combined Comparison Graph -->
+      <div class="gb-card">
+        <h2>All Metrics Comparison</h2>
+        <p style="color: #4b5563; margin-bottom: 1rem;">Compare all three key metrics on one graph</p>
+        <canvas id="combinedChart"></canvas>
+      </div>
+
+      <!-- Lifestyle Correlation (Sleep & Stress) -->
+      <div class="gb-card">
+        <div
+          style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" style="width: 1.5rem; height: 1.5rem; color: #8b5cf6;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+              Lifestyle Correlation
+            </h2>
+            <p style="color: #4b5563; margin-bottom: 1rem;">Track how your sleep and stress affect your glucose levels.
+            </p>
+          </div>
+          <!-- Log Lifestyle Form -->
+          <form action="{{ url_for('add_lifestyle') }}" method="POST"
+            style="background-color: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: #4b5563; margin-bottom: 0.25rem;">Sleep
+                (Hours)</label>
+              <input type="number" step="0.5" min="0" max="24" name="sleep_hours" required
+                style="width: 80px; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.25rem;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; color: #4b5563; margin-bottom: 0.25rem;">Stress
+                (1-10)</label>
+              <input type="number" min="1" max="10" name="stress_level" required
+                style="width: 80px; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.25rem;">
+            </div>
+            <button type="submit"
+              style="background-color: #8b5cf6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; font-weight: bold; cursor: pointer;">Log
+              Today</button>
+          </form>
+        </div>
+        <div style="margin-top: 2rem;">
+          <canvas id="lifestyleChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Plans & Recommendations -->
+    {% if action_plan_items %}
+    <div class="gb-card"
+      style="background: linear-gradient(135deg, #fdf4ff 0%, #f3e8ff 100%); border-left: 4px solid #c084fc; margin-bottom: 2rem;">
+      <h2 style="display: flex; align-items: center; gap: 0.5rem; color: #6b21a8; margin-bottom: 1rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          style="width: 1.5rem; height: 1.5rem;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.829 1.58-1.96a4.105 4.105 0 0 0 3.42-3.42c.131-.922-.714-1.58-1.697-1.58h-.066a3.992 3.992 0 0 0-3.56-2.583A3.99 3.99 0 0 0 12 7.007a3.99 3.99 0 0 0-3.926 3.251 3.992 3.992 0 0 0-3.56 2.583h-.066c-.983 0-1.828.658-1.697 1.58a4.105 4.105 0 0 0 3.42 3.42c.922.131 1.58.983 1.58 1.96V18M12 7.007V4.5m0 0a1.5 1.5 0 0 1 1.5-1.5h-.06a1.5 1.5 0 0 0-1.5 1.5v2.507Z" />
+        </svg>
+        Your Weekly Action Plan
+      </h2>
+      <ul style="list-style-type: none; padding-left: 0; margin-bottom: 0;">
+        {% for item in action_plan_items %}
+        <li
+          style="margin-bottom: 0.75rem; color: #4c1d95; display: flex; align-items: flex-start; gap: 0.5rem; background: rgba(255, 255, 255, 0.5); padding: 0.75rem; border-radius: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 1.25rem; height: 1.25rem; color: #a855f7; flex-shrink: 0; margin-top: 0.1rem;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+          <span style="font-size: 0.95rem; line-height: 1.4;">{{ item }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Insights Section -->
+    {% if reports|length >= 2 %}
+    <div class="gb-card" style="background-color: #f0fdf4; border-left: 4px solid #22c55e;">
+      <h2 style="color: #166534;">Progress Insights</h2>
+      {% set latest = reports[-1] %}
+      {% set previous = reports[-2] %}
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+
+        <!-- FBS Change -->
+        <div style="padding: 1rem; background-color: white; border-radius: 0.8rem;">
+          <p style="color: #4b5563; margin: 0 0 0.5rem 0; font-size: 0.9rem;">Fasting Blood Sugar</p>
+          <p style="margin: 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #0f172a;">
+            {{ latest.fbs }} mg/dL
+          </p>
+          {% set fbs_diff = latest.fbs - previous.fbs %}
+          {% if fbs_diff < 0 %} <p style="color: #22c55e; margin: 0; font-weight: 600;">Decreased by {{ (fbs_diff *
+            -1)|int }} mg/dL</p>
+            {% elif fbs_diff > 0 %}
+            <p style="color: #ef4444; margin: 0; font-weight: 600;">Increased by {{ fbs_diff|int }} mg/dL</p>
+            {% else %}
+            <p style="color: #6366f1; margin: 0; font-weight: 600;">No change</p>
+            {% endif %}
+        </div>
+
+        <!-- PPBS Change -->
+        <div style="padding: 1rem; background-color: white; border-radius: 0.8rem;">
+          <p style="color: #4b5563; margin: 0 0 0.5rem 0; font-size: 0.9rem;">Post-Meal Blood Sugar</p>
+          <p style="margin: 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #0f172a;">
+            {{ latest.ppbs }} mg/dL
+          </p>
+          {% set ppbs_diff = latest.ppbs - previous.ppbs %}
+          {% if ppbs_diff < 0 %} <p style="color: #22c55e; margin: 0; font-weight: 600;">Decreased by {{ (ppbs_diff *
+            -1)|int }} mg/dL</p>
+            {% elif ppbs_diff > 0 %}
+            <p style="color: #ef4444; margin: 0; font-weight: 600;">Increased by {{ ppbs_diff|int }} mg/dL</p>
+            {% else %}
+            <p style="color: #6366f1; margin: 0; font-weight: 600;">No change</p>
+            {% endif %}
+        </div>
+
+        <!-- HbA1c Change -->
+        <div style="padding: 1rem; background-color: white; border-radius: 0.8rem;">
+          <p style="color: #4b5563; margin: 0 0 0.5rem 0; font-size: 0.9rem;">HbA1c Percentage</p>
+          <p style="margin: 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #0f172a;">
+            {{ latest.hba1c }}%
+          </p>
+          {% set hba1c_diff = latest.hba1c - previous.hba1c %}
+          {% if hba1c_diff < 0 %} <p style="color: #22c55e; margin: 0; font-weight: 600;">Decreased by {{ (hba1c_diff *
+            -1)|round(2) }}%</p>
+            {% elif hba1c_diff > 0 %}
+            <p style="color: #ef4444; margin: 0; font-weight: 600;">Increased by {{ hba1c_diff|round(2) }}%</p>
+            {% else %}
+            <p style="color: #6366f1; margin: 0; font-weight: 600;">No change</p>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 1rem; margin-top: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+      <a href="{{ url_for('health_summary') }}" class="gb-btn-primary"
+        style="text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.6rem; background-color: #10b981;">
+        View Health Summary
+      </a>
+      <a href="{{ url_for('analyze') }}" class="gb-btn-primary"
+        style="text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.6rem; background-color: #3b82f6;">
+        Add New Report
+      </a>
+      <a href="{{ url_for('export_doctor_report') }}" class="gb-btn-primary"
+        style="text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.6rem; background-color: #8b5cf6; display: flex; align-items: center; gap: 0.5rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+          style="width: 1.25rem; height: 1.25rem;">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+        </svg>
+        Download Doctor Report
+      </a>
+      <a href="{{ url_for('index') }}" class="gb-btn-primary"
+        style="text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 0.6rem; background-color: #6366f1;">
+        Back to Home
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Data from Flask
+  const dates = {{ dates| safe }};
+  const fbsValues = {{ fbs_values| safe }};
+  const ppbsValues = {{ ppbs_values| safe }};
+  const hba1cValues = {{ hba1c_values| safe }};
+
+  // Lifestyle Data
+  const lifestyleDates = {{ lifestyle_dates| safe }};
+  const sleepData = {{ sleep_data| safe }};
+  const stressData = {{ stress_data| safe }};
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        display: true,
+        labels: {
+          font: { size: 12, family: "'Inter', sans-serif" },
+          color: '#4b5563',
+          padding: 15,
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+        grid: { color: '#e2e8f0' }
+      },
+      x: {
+        ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+        grid: { color: '#e2e8f0' }
+      }
+    }
+  };
+
+  // FBS Trend Chart
+  const fbsCtx = document.getElementById('fbsChart').getContext('2d');
+  new Chart(fbsCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'FBS (mg/dL)',
+        data: fbsValues,
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: '#3b82f6',
+        tension: 0.3,
+        fill: true,
+      }, {
+        label: 'Target (100 mg/dL)',
+        data: Array(dates.length).fill(100),
+        borderColor: '#22c55e',
+        borderDash: [5, 5],
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+      }]
+    },
+    options: chartOptions
+  });
+
+  // PPBS Trend Chart
+  const ppbsCtx = document.getElementById('ppbsChart').getContext('2d');
+  new Chart(ppbsCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'PPBS (mg/dL)',
+        data: ppbsValues,
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: '#f59e0b',
+        tension: 0.3,
+        fill: true,
+      }, {
+        label: 'Target (140 mg/dL)',
+        data: Array(dates.length).fill(140),
+        borderColor: '#22c55e',
+        borderDash: [5, 5],
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+      }]
+    },
+    options: chartOptions
+  });
+
+  // HbA1c Trend Chart
+  const hba1cCtx = document.getElementById('hba1cChart').getContext('2d');
+  new Chart(hba1cCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [{
+        label: 'HbA1c (%)',
+        data: hba1cValues,
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: '#ef4444',
+        tension: 0.3,
+        fill: true,
+      }, {
+        label: 'Target (5.7%)',
+        data: Array(dates.length).fill(5.7),
+        borderColor: '#22c55e',
+        borderDash: [5, 5],
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+      }]
+    },
+    options: chartOptions
+  });
+
+  // Combined Comparison Chart
+  const combinedCtx = document.getElementById('combinedChart').getContext('2d');
+  new Chart(combinedCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: 'FBS (mg/dL)',
+          data: fbsValues,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.05)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#3b82f6',
+          tension: 0.3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'PPBS (mg/dL)',
+          data: ppbsValues,
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245, 158, 11, 0.05)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#f59e0b',
+          tension: 0.3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'HbA1c (%) × 20',
+          data: hba1cValues.map(v => v * 20),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.05)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#ef4444',
+          tension: 0.3,
+          yAxisID: 'y',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            font: { size: 12, family: "'Inter', sans-serif" },
+            color: '#4b5563',
+            padding: 15,
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+          grid: { color: '#e2e8f0' }
+        },
+        x: {
+          ticks: { color: '#4b5563', font: { family: "'Inter', sans-serif" } },
+          grid: { color: '#e2e8f0' }
+        }
+      }
+    }
+  });
+
+  // Lifestyle Correlation Chart
+  if (lifestyleDates.length > 0) {
+    const lifestyleCtx = document.getElementById('lifestyleChart').getContext('2d');
+    new Chart(lifestyleCtx, {
+      type: 'bar',
+      data: {
+        labels: lifestyleDates,
+        datasets: [
+          {
+            label: 'Sleep (Hours)',
+            targetAxisID: 'y',
+            data: sleepData,
+            backgroundColor: 'rgba(99, 102, 241, 0.6)',
+            borderColor: '#4f46e5',
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          {
+            label: 'Stress Level (1-10)',
+            targetAxisID: 'y',
+            data: stressData,
+            backgroundColor: 'rgba(239, 68, 68, 0.6)',
+            borderColor: '#dc2626',
+            borderWidth: 1,
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            labels: { font: { family: "'Inter', sans-serif" } }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 12, // Since Sleep is rarely over 12 and stress max is 10
+            grid: { color: '#e2e8f0' }
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  } else {
+    const lifestyleCtxContainer = document.getElementById('lifestyleChart').parentElement;
+    lifestyleCtxContainer.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem; background:#f8fafc; border-radius:0.5rem;">Log your sleep and stress today to start seeing your lifestyle pattern chart!</p>';
+  }
+
+  // Hydration AJAX logic
+  function addWaterProcess() {
+    const btn = document.getElementById('addWaterBtn');
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+
+    fetch('/hydration/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const counter = document.getElementById('waterCount');
+          counter.innerText = data.glasses;
+
+          // Subtle animation
+          counter.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            counter.style.transform = 'scale(1)';
+          }, 200);
+        } else {
+          alert('Failed to log water. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error logging water:', error);
+        alert('An network error occurred.');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      });
+  }
+</script>
+
+{% endblock %}

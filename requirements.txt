@@ -1,0 +1,11 @@
+# GlucoBalance - Digital Health Assistant
+# Requirements: Python 3.8+
+#
+# Core logic mostly uses the Python standard library.
+# The web application uses Flask for a clean, simple web interface.
+
+python>=3.8
+Flask>=3.0.0
+Flask-SQLAlchemy>=3.1.0
+deep-translator
+xhtml2pdf

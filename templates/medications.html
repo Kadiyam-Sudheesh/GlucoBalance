@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="gb-main">
+    <div class="gb-container">
+        <h1 style="margin-top: 2rem; color: #0f172a;">Medication Tracker</h1>
+        <p style="color: #4b5563; margin-bottom: 2rem;">Manage your daily medications and track adherence.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+            <!-- Add Medication Form -->
+            <div class="gb-card">
+                <h2>➕ Add New Medication</h2>
+                <form action="{{ url_for('medications') }}" method="POST">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Medication
+                            Name</label>
+                        <input type="text" id="name" name="name" required placeholder="e.g. Metformin"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="dosage"
+                            style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Dosage</label>
+                        <input type="text" id="dosage" name="dosage" required placeholder="e.g. 500mg"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label for="frequency"
+                            style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Frequency</label>
+                        <select id="frequency" name="frequency"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                            <option value="Once Daily">Once Daily</option>
+                            <option value="Twice Daily">Twice Daily (Morning & Night)</option>
+                            <option value="Three Times Daily">Three Times Daily</option>
+                            <option value="Before Meals">Before Meals</option>
+                            <option value="Before Bed">Before Bed</option>
+                            <option value="As Needed">As Needed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="notes" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Notes
+                            (Optional)</label>
+                        <textarea id="notes" name="notes" placeholder="e.g. Take with food"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; resize: vertical;"></textarea>
+                    </div>
+
+                    <button type="submit" class="gb-btn-primary"
+                        style="width: 100%; padding: 0.75rem; border: none; border-radius: 0.5rem; background-color: #3b82f6; color: white; cursor: pointer; font-weight: 600;">
+                        Add Medication
+                    </button>
+                </form>
+            </div>
+
+            <!-- Medication List -->
+            <div class="gb-card">
+                <h2>💊 Your Prescriptions</h2>
+                {% if medications %}
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% for med in medications %}
+                    <li
+                        style="border-bottom: 1px solid #e2e8f0; padding: 1rem 0; display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h3 style="margin: 0; color: #0f172a; font-size: 1.1rem;">{{ med.name }}</h3>
+                            <p style="margin: 0.25rem 0; color: #64748b;">{{ med.dosage }} • {{ med.frequency }}</p>
+                            {% if med.notes %}
+                            <p style="margin: 0; font-size: 0.85rem; color: #94a3b8; font-style: italic;">Note: {{
+                                med.notes }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                            <!-- Log Button -->
+                            {% if med.id in logged_med_ids %}
+                            <button disabled
+                                style="background-color: #22c55e; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: default; font-weight: 600;">
+                                ✓ Taken Today
+                            </button>
+                            {% else %}
+                            <form action="{{ url_for('log_medication', med_id=med.id) }}" method="POST">
+                                <button type="submit"
+                                    style="background-color: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; transition: background-color 0.2s;">
+                                    Take Now
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <!-- Edit Button -->
+                            <a href="{{ url_for('edit_medication', med_id=med.id) }}"
+                                style="background: none; border: none; color: #3b82f6; font-size: 0.85rem; cursor: pointer; text-decoration: underline; margin-right: 0.5rem;">
+                                Edit
+                            </a>
+
+                            <!-- Delete Button -->
+                            <form action="{{ url_for('delete_medication', med_id=med.id) }}" method="POST"
+                                onsubmit="return confirm('Remove {{ med.name }}?');" style="display: inline;">
+                                <button type="submit"
+                                    style="background: none; border: none; color: #ef4444; font-size: 0.85rem; cursor: pointer; text-decoration: underline;">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p style="color: #64748b; font-style: italic;">No medications added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('dashboard') }}" style="color: #6366f1; text-decoration: none;">&larr; Back to
+                Dashboard</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

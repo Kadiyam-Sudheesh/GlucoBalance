@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="gb-hero gb-hero-compact">
+  <div class="gb-container gb-hero-inner">
+    <div class="gb-hero-copy">
+      <h1>Your personalized GlucoBalance report</h1>
+      <p>
+        This page summarizes your current health data, highlights any positive
+        changes, and gives you a realistic weekly and monthly plan to move
+        forward calmly and confidently.
+      </p>
+    </div>
+    <div class="gb-hero-panel">
+      <div class="gb-hero-summary-card">
+        <h2>What this report includes</h2>
+        <ul>
+          <li>{{ health_summary_heading }}</li>
+          <li>{{ report_comparison_heading }}</li>
+          <li>{{ weekly_progress_heading }}</li>
+          <li>{{ monthly_progress_heading }}</li>
+          <li>{{ visual_graph_heading }}</li>
+          <li>{{ weekly_action_heading }}</li>
+          <li>{{ monthly_improvement_heading }}</li>
+          <li>{{ motivation_heading }}</li>
+          <li>{{ reassurance_heading }}</li>
+          <li>{{ disclaimer_heading }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="gb-section">
+  <div class="gb-container gb-report-layout">
+    <aside class="gb-report-sidebar">
+      <h3>Jump to section</h3>
+      <nav class="gb-report-nav">
+        <a href="#health-summary">{{ health_summary_heading }}</a>
+        <a href="#report-comparison">{{ report_comparison_heading }}</a>
+        <a href="#weekly-progress">{{ weekly_progress_heading }}</a>
+        <a href="#monthly-progress">{{ monthly_progress_heading }}</a>
+        <a href="#visual-graphs">{{ visual_graph_heading }}</a>
+        <a href="#weekly-action">{{ weekly_action_heading }}</a>
+        <a href="#monthly-improvement">{{ monthly_improvement_heading }}</a>
+        <a href="#motivation">{{ motivation_heading }}</a>
+        <a href="#reassurance">{{ reassurance_heading }}</a>
+        <a href="#disclaimer">{{ disclaimer_heading }}</a>
+      </nav>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <a href="{{ url_for('dashboard') }}" class="gb-btn gb-btn-full"
+          style="background-color: #22c55e; text-decoration: none; text-align: center; padding: 0.75rem;">
+          View Dashboard
+        </a>
+        <a href="{{ url_for('analyze') }}" class="gb-btn gb-btn-outline gb-btn-full no-animation">
+          Add New Report
+        </a>
+        <a href="{{ url_for('index') }}" class="gb-btn gb-btn-outline gb-btn-full no-animation">
+          Home
+        </a>
+      </div>
+    </aside>
+
+    <div class="gb-report-content">
+      <article id="health-summary" class="gb-card gb-card-report">
+        <h2>{{ health_summary_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['health_summary'] }}</div>
+      </article>
+
+      <article id="report-comparison" class="gb-card gb-card-report">
+        <h2>{{ report_comparison_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['report_comparison'] }}</div>
+      </article>
+
+      <article id="weekly-progress" class="gb-card gb-card-report">
+        <h2>{{ weekly_progress_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['weekly_progress'] }}</div>
+      </article>
+
+      <article id="monthly-progress" class="gb-card gb-card-report">
+        <h2>{{ monthly_progress_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['monthly_progress'] }}</div>
+      </article>
+
+      <article id="visual-graphs" class="gb-card gb-card-report">
+        <h2>{{ visual_graph_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['visual_graph'] }}</div>
+      </article>
+
+      <article id="weekly-action" class="gb-card gb-card-report">
+        <h2>{{ weekly_action_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['weekly_action'] }}</div>
+      </article>
+
+      <article id="monthly-improvement" class="gb-card gb-card-report">
+        <h2>{{ monthly_improvement_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['monthly_improvement'] }}</div>
+      </article>
+
+      <article id="motivation" class="gb-card gb-card-report">
+        <h2>{{ motivation_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['motivation'] }}</div>
+      </article>
+
+      <article id="reassurance" class="gb-card gb-card-report">
+        <h2>{{ reassurance_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['reassurance'] }}</div>
+      </article>
+
+      <article id="disclaimer" class="gb-card gb-card-report gb-card-disclaimer">
+        <h2>{{ disclaimer_heading }}</h2>
+        <div style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; white-space: pre-wrap;">{{
+          structured_analysis['disclaimer'] }}</div>
+      </article>
+
+      <!-- Detailed Report Section -->
+      <article class="gb-card gb-card-report gb-card-raw" id="detailed-report-section">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <h2>Full Detailed Report</h2>
+
+          <!-- Controls -->
+          <div style="display: flex; gap: 0.5rem;">
+            <button onclick="window.print()" class="gb-btn gb-btn-outline"
+              style="padding: 0.5rem 1rem; font-size: 0.9rem; color: #fff; border-color: #475569;">
+              Print
+            </button>
+            <button onclick="downloadPDF()" class="gb-btn gb-btn-primary"
+              style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+              Download PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Language Selection -->
+        <div
+          style="margin-bottom: 1.5rem; padding: 1rem; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 0.8rem;">
+          <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">Translate Report:</p>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button onclick="translateReport('en')" class="gb-btn gb-btn-outline gb-btn-sm active-lang"
+              data-lang="en">English</button>
+            <button onclick="translateReport('hi')" class="gb-btn gb-btn-outline gb-btn-sm"
+              data-lang="hi">Hindi</button>
+            <button onclick="translateReport('ta')" class="gb-btn gb-btn-outline gb-btn-sm"
+              data-lang="ta">Tamil</button>
+            <button onclick="translateReport('kn')" class="gb-btn gb-btn-outline gb-btn-sm"
+              data-lang="kn">Kannada</button>
+            <button onclick="translateReport('te')" class="gb-btn gb-btn-outline gb-btn-sm"
+              data-lang="te">Telugu</button>
+          </div>
+        </div>
+
+        <p style="color: #94a3b8;">
+          Below is the complete GlucoBalance report generated from your data.
+        </p>
+
+        <!-- View Toggle -->
+        <div style="text-align: center; margin-bottom: 1rem; margin-top: 1rem;">
+          <button id="view-toggle-btn" onclick="toggleReport()" class="gb-btn gb-btn-primary"
+            style="background-color: #3b82f6;">
+            View Full Report
+          </button>
+        </div>
+
+        <!-- Content Container -->
+        <div id="report-container" style="display: none;">
+          <div id="report-content" class="gb-report-pre"
+            style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; background: #fff; color: #000; white-space: pre-wrap; padding: 2rem;">
+            {{ full_report }}</div>
+        </div>
+
+        <div id="loading-indicator" style="display: none; text-align: center; color: #94a3b8; padding: 2rem;">
+          Processing translation...
+        </div>
+
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- html2pdf Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+  // Store original text
+  const originalText = `{{ full_report }}`;
+  let currentLang = 'en';
+
+  function toggleReport() {
+    const container = document.getElementById('report-container');
+    const btn = document.getElementById('view-toggle-btn');
+
+    if (container.style.display === 'none') {
+      container.style.display = 'block';
+      btn.textContent = 'Hide Full Report';
+    } else {
+      container.style.display = 'none';
+      btn.textContent = 'View Full Report';
+    }
+  }
+
+  async function translateReport(lang) {
+    // Update active button state
+    document.querySelectorAll('.gb-btn-sm').forEach(btn => {
+      btn.classList.remove('active-lang');
+      btn.style.backgroundColor = 'transparent';
+      if (btn.dataset.lang === lang) {
+        btn.classList.add('active-lang');
+        btn.style.backgroundColor = 'rgba(255,255,255,0.1)';
+      }
+    });
+
+    const contentDiv = document.getElementById('report-content');
+    const loadingDiv = document.getElementById('loading-indicator');
+    const container = document.getElementById('report-container');
+
+    // Always show container when translating
+    if (container.style.display === 'none') {
+      toggleReport();
+    }
+
+    if (lang === 'en') {
+      contentDiv.textContent = originalText;
+      currentLang = 'en';
+      return;
+    }
+
+    // Show loading
+    contentDiv.style.opacity = '0.5';
+    loadingDiv.style.display = 'block';
+
+    try {
+      const response = await fetch('/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: originalText,
+          target_lang: lang
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.translated_text) {
+        contentDiv.textContent = data.translated_text;
+        currentLang = lang;
+      } else {
+        alert('Translation failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred during translation.');
+    } finally {
+      contentDiv.style.opacity = '1';
+      loadingDiv.style.display = 'none';
+    }
+  }
+
+  function downloadPDF() {
+    const element = document.getElementById('report-content');
+    const container = document.getElementById('report-container');
+
+    // Ensure content is visible
+    const wasHidden = container.style.display === 'none';
+    if (wasHidden) {
+      container.style.display = 'block';
+    }
+
+    const opt = {
+      margin: 0.5,
+      filename: `GlucoBalance_Report_${currentLang}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      if (wasHidden) {
+        container.style.display = 'none';
+      }
+    });
+  }
+</script>
+
+<style>
+  /* Print Styles */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #report-content,
+    #report-content * {
+      visibility: visible;
+    }
+
+    #report-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      background: white !important;
+      color: black !important;
+      padding: 20px !important;
+      font-size: 14pt !important;
+    }
+
+    .gb-header,
+    .gb-footer,
+    .gb-report-sidebar,
+    .gb-hero,
+    .gb-btn,
+    .gb-link,
+    #view-toggle-btn {
+      display: none !important;
+    }
+  }
+
+  .gb-btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    border-color: #475569;
+  }
+
+  .gb-btn-sm:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .active-lang {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: #94a3b8;
+    color: white;
+  }
+</style>
+{% endblock %}

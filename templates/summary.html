@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="gb-main">
+    <div class="gb-container">
+        <div class="gb-card" style="max-width: 800px; margin: 2rem auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h1 style="margin: 0; color: #0f172a;">Health Summary</h1>
+
+                <!-- Controls -->
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button onclick="window.print()" class="gb-btn gb-btn-outline"
+                        style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Print / Save PDF
+                    </button>
+                    <button onclick="downloadPDF()" class="gb-btn gb-btn-primary"
+                        style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        Download
+                    </button>
+                </div>
+            </div>
+
+            <!-- Language Selection -->
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background-color: #f8fafc; border-radius: 0.8rem;">
+                <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">Translate Summary:
+                </p>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button onclick="translateSummary('en')" class="gb-btn gb-btn-outline gb-btn-sm active-lang"
+                        data-lang="en">English</button>
+                    <button onclick="translateSummary('hi')" class="gb-btn gb-btn-outline gb-btn-sm"
+                        data-lang="hi">Hindi (हिंदी)</button>
+                    <button onclick="translateSummary('ta')" class="gb-btn gb-btn-outline gb-btn-sm"
+                        data-lang="ta">Tamil (தமிழ்)</button>
+                    <button onclick="translateSummary('kn')" class="gb-btn gb-btn-outline gb-btn-sm"
+                        data-lang="kn">Kannada (ಕನ್ನಡ)</button>
+                    <button onclick="translateSummary('te')" class="gb-btn gb-btn-outline gb-btn-sm"
+                        data-lang="te">Telugu (తెలుగు)</button>
+                </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <button id="view-toggle-btn" onclick="toggleSummary()" class="gb-btn gb-btn-primary">
+                    View Full Summary
+                </button>
+            </div>
+
+            <!-- Summary Content -->
+            <div id="summary-container" style="display: none;">
+                <div id="summary-content"
+                    style="font-family: 'Times New Roman', serif; font-size: 19px; line-height: 1.6; color: #000; padding: 2rem; background: white; white-space: pre-wrap;">
+                    {{ summary }}</div>
+            </div>
+
+            <div id="loading-indicator" style="display: none; text-align: center; color: #64748b; padding: 2rem;">
+                Processing translation...
+            </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('dashboard') }}" class="gb-link">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- html2pdf Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+    // Store original text to avoid re-fetching English
+    const originalText = `{{ summary }}`;
+    let currentLang = 'en';
+
+    function toggleSummary() {
+        const container = document.getElementById('summary-container');
+        const btn = document.getElementById('view-toggle-btn');
+
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            btn.textContent = 'Hide Full Summary';
+        } else {
+            container.style.display = 'none';
+            btn.textContent = 'View Full Summary';
+        }
+    }
+
+    async function translateSummary(lang) {
+        // Update active button state
+        document.querySelectorAll('.gb-btn-sm').forEach(btn => {
+            btn.classList.remove('active-lang');
+            btn.style.backgroundColor = 'transparent';
+            btn.style.color = '#0f172a';
+            if (btn.dataset.lang === lang) {
+                btn.classList.add('active-lang');
+                btn.style.backgroundColor = '#e2e8f0';
+            }
+        });
+
+        const contentDiv = document.getElementById('summary-content');
+        const loadingDiv = document.getElementById('loading-indicator');
+        const container = document.getElementById('summary-container');
+
+        // Always show container when translating
+        if (container.style.display === 'none') {
+            toggleSummary();
+        }
+
+        if (lang === 'en') {
+            contentDiv.textContent = originalText;
+            currentLang = 'en';
+            return;
+        }
+
+        // Show loading
+        contentDiv.style.opacity = '0.5';
+        loadingDiv.style.display = 'block';
+
+        try {
+            const response = await fetch('/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: originalText,
+                    target_lang: lang
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.translated_text) {
+                contentDiv.textContent = data.translated_text;
+                currentLang = lang;
+            } else {
+                alert('Translation failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred during translation.');
+        } finally {
+            contentDiv.style.opacity = '1';
+            loadingDiv.style.display = 'none';
+        }
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('summary-content');
+        const container = document.getElementById('summary-container');
+
+        // Ensure content is visible
+        const wasHidden = container.style.display === 'none';
+        if (wasHidden) {
+            container.style.display = 'block';
+        }
+
+        const opt = {
+            margin: 1,
+            filename: `Health_Summary_${currentLang}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // New Promise-based usage:
+        html2pdf().set(opt).from(element).save().then(() => {
+            if (wasHidden) {
+                container.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+<style>
+    /* Print Styles */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #summary-content,
+        #summary-content * {
+            visibility: visible;
+        }
+
+        #summary-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 20px !important;
+            font-size: 14pt !important;
+        }
+
+        .gb-header,
+        .gb-footer,
+        .gb-btn,
+        .gb-link,
+        #view-toggle-btn {
+            display: none !important;
+        }
+    }
+
+    .gb-btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

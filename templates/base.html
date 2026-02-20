@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>GlucoBalance - Digital Health Assistant</title>
+
+  <!-- PWA Manifest & Theme Color -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo_192.png') }}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}" />
+</head>
+
+<body>
+  <header class="gb-header">
+    <div class="gb-container gb-header-inner">
+      <div class="gb-logo">
+        <img src="{{ url_for('static', filename='images/logo.png', v=4) }}" alt="GlucoBalance" class="gb-logo-img">
+        <span class="gb-logo-text">
+          <span class="gb-logo-title">GlucoBalance</span>
+          <span class="gb-logo-subtitle">Calm Control & Confident Living.</span>
+        </span>
+      </div>
+      <nav class="gb-nav">
+        <a href="{{ url_for('index') }}" class="gb-nav-link">Home</a>
+        <a href="#how-it-works" class="gb-nav-link">How it works</a>
+        <a href="#safety" class="gb-nav-link">Safety</a>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('medications') }}" class="gb-nav-link">Medications</a>
+        <a href="{{ url_for('food_log') }}" class="gb-nav-link">Food</a>
+        <a href="{{ url_for('manage_contacts') }}" class="gb-nav-link">Contacts</a>
+        <a href="{{ url_for('dashboard') }}" class="gb-nav-link">Dashboard</a>
+        <a href="{{ url_for('analyze') }}" class="gb-nav-link">New Report</a>
+        <a href="{{ url_for('profile') }}" class="gb-nav-link">Profile</a>
+        <a href="{{ url_for('logout') }}" class="gb-nav-link">Logout</a>
+        <button onclick="toggleHighContrast()" class="gb-nav-link"
+          style="background:none; border:none; cursor:pointer; display: flex; align-items: center;"
+          title="Toggle High Contrast">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            style="width: 1.5rem; height: 1.5rem;">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+          </svg>
+        </button>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div class="gb-alert gb-alert-{{ category }}"
+    style="margin: 10px; padding: 12px; border-radius: 4px; text-align: center;">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <main class="gb-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="gb-footer" id="safety">
+    <div class="gb-container gb-footer-inner">
+      <div class="gb-footer-col">
+        <h4>About GlucoBalance</h4>
+        <p>
+          GlucoBalance is an empathetic digital health assistant designed to
+          help diabetic and pre-diabetic users understand their data, build
+          healthy habits, and stay confident.
+        </p>
+      </div>
+      <div class="gb-footer-col">
+        <h4>Safety & Ethics</h4>
+        <ul class="gb-footer-list">
+          <li>Does not replace professional medical advice</li>
+          <li>Never claims to cure diabetes</li>
+          <li>Focuses on gentle, habit-based improvements</li>
+          <li>Encourages regular doctor consultations</li>
+        </ul>
+      </div>
+      <div class="gb-footer-col">
+        <h4>Important</h4>
+        <p class="gb-footer-disclaimer">
+          This platform is not a replacement for professional medical advice.
+          For medication changes or medical concerns, please consult your
+          doctor.
+        </p>
+      </div>
+    </div>
+    <div class="gb-footer-bottom">
+      <div class="gb-container gb-footer-bottom-inner">
+        <div class="gb-footer-info">
+          <span>© {{ '%Y'|strftime }} GlucoBalance</span>
+          <span class="gb-footer-tagline">
+            Evidence-based diabetes management for better health outcomes.
+          </span>
+        </div>
+        <div class="gb-footer-contact">
+          <span class="gb-footer-contact-item">Email: <a
+              href="mailto:sudheeshy999@gmail.com">sudheeshy999@gmail.com</a></span>
+          <span class="gb-footer-contact-item">Phone: <a href="tel:+917396283848">+91 7396283848</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- PWA & Accessibility scripts -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+
+    function toggleHighContrast() {
+      document.body.classList.toggle('high-contrast');
+      const isHighContrast = document.body.classList.contains('high-contrast');
+      localStorage.setItem('highContrast', isHighContrast);
+    }
+
+    // Apply preference on load
+    if (localStorage.getItem('highContrast') === 'true') {
+      document.body.classList.add('high-contrast');
+    }
+  </script>
+</body>
+
+</html>

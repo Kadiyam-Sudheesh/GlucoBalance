@@ -1,0 +1,21 @@
+{
+  "name": "GlucoCare",
+  "short_name": "GlucoCare",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "description": "Intelligent Diabetes Management System",
+  "icons": [
+    {
+      "src": "/static/images/logo_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

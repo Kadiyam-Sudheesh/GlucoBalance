@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="gb-login-section">
+  <div class="gb-container gb-login-container">
+    <div class="gb-login-card">
+      <div class="gb-login-header">
+        <h1>Welcome Back</h1>
+        <p>Sign in to your GlucoBalance account</p>
+      </div>
+
+      {% if error %}
+      <div class="gb-alert gb-alert-error">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" class="gb-login-form" onsubmit="validateLoginForm(event)">
+        <div class="gb-form-group">
+          <label for="email" class="gb-label">Email Address (or use phone below) <span
+              style="color: red;">*</span></label>
+          <input type="email" id="email" name="email" class="gb-input" placeholder="Enter your email address"
+            autofocus />
+        </div>
+
+        <div class="gb-form-group">
+          <label for="phone" class="gb-label">Or Phone Number</label>
+          <div class="gb-phone-input-group">
+            <select id="country_code" name="country_code" class="gb-input gb-country-select">
+              <option value="+91" selected>🇮🇳 +91 (India)</option>
+              <option value="+1">🇺🇸 +1 (USA/Canada)</option>
+              <option value="+44">🇬🇧 +44 (UK)</option>
+              <option value="+86">🇨🇳 +86 (China)</option>
+              <option value="+81">🇯🇵 +81 (Japan)</option>
+              <option value="+852">🇭🇰 +852 (Hong Kong)</option>
+              <option value="+65">🇸🇬 +65 (Singapore)</option>
+              <option value="+61">🇦🇺 +61 (Australia)</option>
+              <option value="+33">🇫🇷 +33 (France)</option>
+              <option value="+49">🇩🇪 +49 (Germany)</option>
+              <option value="+39">🇮🇹 +39 (Italy)</option>
+              <option value="+34">🇪🇸 +34 (Spain)</option>
+              <option value="+31">🇳🇱 +31 (Netherlands)</option>
+              <option value="+41">🇨🇭 +41 (Switzerland)</option>
+              <option value="+43">🇦🇹 +43 (Austria)</option>
+              <option value="+46">🇸🇪 +46 (Sweden)</option>
+              <option value="+47">🇳🇴 +47 (Norway)</option>
+              <option value="+45">🇩🇰 +45 (Denmark)</option>
+              <option value="+358">🇫🇮 +358 (Finland)</option>
+              <option value="+30">🇬🇷 +30 (Greece)</option>
+              <option value="+20">🇪🇬 +20 (Egypt)</option>
+              <option value="+27">🇿🇦 +27 (South Africa)</option>
+              <option value="+55">🇧🇷 +55 (Brazil)</option>
+              <option value="+54">🇦🇷 +54 (Argentina)</option>
+              <option value="+52">🇲🇽 +52 (Mexico)</option>
+              <option value="+64">🇳🇿 +64 (New Zealand)</option>
+            </select>
+            <input type="tel" id="phone" name="phone" class="gb-input" placeholder="Enter your phone number" />
+          </div>
+        </div>
+
+        <div class="gb-form-group">
+          <label for="password" class="gb-label">Password <span style="color: red;">*</span></label>
+          <input type="password" id="password" name="password" class="gb-input" placeholder="Enter your password"
+            required />
+        </div>
+
+        <div class="gb-form-group gb-form-group-checkbox">
+          <input type="checkbox" id="remember" name="remember" class="gb-checkbox" />
+          <label for="remember" class="gb-label-checkbox">Remember me</label>
+        </div>
+
+        <button type="submit" class="gb-btn gb-btn-primary gb-btn-full">
+          Sign In
+        </button>
+      </form>
+
+      <script>
+        function validateLoginForm(event) {
+          const email = document.getElementById('email').value.trim();
+          const phone = document.getElementById('phone').value.trim();
+          const password = document.getElementById('password').value.trim();
+
+          if (!email && !phone) {
+            event.preventDefault();
+            alert('Please enter either email address or phone number');
+            return false;
+          }
+
+          if (!password) {
+            event.preventDefault();
+            alert('Please enter your password');
+            return false;
+          }
+
+          return true;
+        }
+      </script>
+
+
+
+      <div class="gb-login-links">
+        <p>
+          Don't have an account?
+          <a href="{{ url_for('signup') }}" class="gb-link">Sign Up</a>
+        </p>
+        <a href="{{ url_for('index') }}" class="gb-link">Back to Home</a>
+      </div>
+    </div>
+
+    <div class="gb-login-info">
+      <h2>Why sign in?</h2>
+      <ul class="gb-login-benefits">
+        <li>Save your health history and track progress over time</li>
+        <li>Get personalized recommendations based on your trends</li>
+        <li>Receive weekly action plans tailored to your goals</li>
+        <li>Access your reports anytime, anywhere</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

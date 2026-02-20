@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="gb-section gb-report-full-view">
+    <div class="gb-container">
+      <div class="gb-report-header">
+        <h1>Your Complete Health Report</h1>
+        <p>Full detailed analysis of your blood sugar readings and personalized guidance</p>
+        <a href="{{ url_for('index') }}" class="gb-btn gb-btn-outline">Back to Home</a>
+      </div>
+
+      <div class="gb-report-full-content gb-report-font-serif">
+        {% if full_report and full_report != "No report available. Please generate a new analysis." %}
+          <pre class="gb-report-full-pre">{{ full_report }}</pre>
+        {% else %}
+          <div class="gb-alert gb-alert-warning">
+            <strong>No report available.</strong> Please go back and generate a new analysis to view your detailed report.
+          </div>
+          <a href="{{ url_for('index') }}" class="gb-btn gb-btn-primary">Generate New Report</a>
+        {% endif %}
+      </div>
+
+      <div class="gb-report-footer">
+        <p class="gb-report-note">
+          This report is confidential and tailored to your specific health data. 
+          Please consult with your healthcare provider before making any changes to your medication or treatment plan.
+        </p>
+        <button onclick="window.print()" class="gb-btn gb-btn-primary">
+          Print Report
+        </button>
+      </div>
+    </div>
+  </section>
+{% endblock %}

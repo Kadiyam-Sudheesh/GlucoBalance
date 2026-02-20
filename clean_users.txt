@@ -1,0 +1,4 @@
+--- All Users in Database ---
+ID: 1 | Name: Test User DB | Email: 'db_test@example.com' | Phone: '+19876543210'
+ID: 2 | Name: Phone Test User | Email: 'phone_test@example.com' | Phone: '+15551234567'
+--- End of List ---
