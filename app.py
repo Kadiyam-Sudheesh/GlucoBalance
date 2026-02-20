@@ -16,11 +16,15 @@ from services.action_plans import generate_action_plan
 from deep_translator import GoogleTranslator
 from xhtml2pdf import pisa
 import io
+from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
+
+load_dotenv()
 
 def create_app() -> Flask:
     """Application factory."""
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = "glucobalance-demo-secret-key"
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "glucobalance-default-key")
     
     # Database Configuration
     # Use SQLite. db file will be created in the instance folder or current folder.
@@ -111,7 +115,17 @@ def create_app() -> Flask:
                     # Maybe they registered without country code? (Legacy data)
                     user = User.query.filter_by(phone=clean_phone).first()
             
-            if user and user.password == password:
+            is_valid = False
+            if user:
+                if user.password.startswith('scrypt:') or user.password.startswith('pbkdf2:'):
+                    is_valid = check_password_hash(user.password, password)
+                elif user.password == password:
+                    # Seamless upgrade of legacy plaintext passwords
+                    user.password = generate_password_hash(password)
+                    db.session.commit()
+                    is_valid = True
+            
+            if is_valid:
                 # Login successful - set session
                 session.permanent = True
                 session["user_id"] = user.id
@@ -162,11 +176,12 @@ def create_app() -> Flask:
                 return redirect(url_for("signup"))
             
             # Create new user
+            hashed_pw = generate_password_hash(password)
             new_user = User(
                 name=name,
                 email=email,
                 phone=f"{country_code}{phone}",
-                password=password
+                password=hashed_pw
             )
             db.session.add(new_user)
             db.session.commit()
