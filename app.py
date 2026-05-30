@@ -46,8 +46,11 @@ def create_app() -> Flask:
     api = GlucoBalanceAPI()
 
     # Create tables within app context
-    with app.app_context():
-        db.create_all()
+    try:
+        with app.app_context():
+            db.create_all()
+    except Exception as e:
+        app.logger.error(f"Database initialization failed: {e}")
 
     # Initialize background scheduler for reminders once per process
     from services.sms_reminders import init_scheduler
